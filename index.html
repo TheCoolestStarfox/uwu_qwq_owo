@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>New Year Countdown</title>
+  <style>
+    body { background: black; color: white; font-family: Arial, sans-serif; text-align: center; }
+    h1 { font-size: 3em; margin-top: 20%; }
+    button { margin: 10px; padding: 10px 20px; font-size: 1.2em; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1 id="timer"></h1>
+  <button id="record">Start Recording</button>
+  <button id="stop">Stop & Download</button>
+  <video id="preview" autoplay muted></video>
+
+  <script>
+    // Target date: Jan 1, 2026 at midnight PST
+    const target = new Date("January 1, 2026 00:00:00 PST").getTime();
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = target - now;
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById("timer").innerHTML =
+        days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+
+      if (distance < 0) {
+        document.getElementById("timer").innerHTML = "🎉 Happy New Year!";
+      }
+    }
+
+    setInterval(updateCountdown, 1000);
+
+    // Recording setup
+    let recorder, stream;
+    document.getElementById("record").onclick = async () => {
+      stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      document.getElementById("preview").srcObject = stream;
+      recorder = new MediaRecorder(stream);
+      let chunks = [];
+      recorder.ondataavailable = e => chunks.push(e.data);
+      recorder.onstop = e => {
+        let blob = new Blob(chunks, { type: "video/webm" });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = "countdown.webm";
+        a.click();
+      };
+      recorder.start();
+    };
+    document.getElementById("stop").onclick = () => {
+      recorder.stop();
+      stream.getTracks().forEach(track => track.stop());
+    };
+  </script>
+</body>
+</html>
