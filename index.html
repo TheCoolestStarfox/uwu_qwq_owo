@@ -2,28 +2,59 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>CHAOTIC Countdown</title>
+  <title>Countdown with Control Panel</title>
   <style>
     body {
       margin: 0;
       background: #000;
       color: #fff;
       font-family: Arial, sans-serif;
-      overflow-y: scroll;
+      text-align: center;
       cursor: none;
-    }
-    section {
       height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      position: relative;
-      transform-origin: center;
     }
     h1 { font-size: 3.2em; margin: 0.4em 0; text-shadow: 0 0 12px rgba(255,255,255,0.25); }
-    button { margin: 6px; padding: 10px 18px; font-size: 1em; cursor: pointer; border: 1px solid #666; background: #111; color: #fff; }
+
+    /* Control panel styling */
+    .control-panel {
+      background: rgba(20,20,20,0.9);
+      border: 2px solid #444;
+      border-radius: 12px;
+      padding: 20px;
+      width: 300px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .control-panel h2 {
+      margin: 0 0 10px;
+      font-size: 1.2em;
+      color: #0ff;
+      text-shadow: 0 0 8px #0ff;
+    }
+    .control-panel button {
+      padding: 10px;
+      font-size: 1em;
+      border: 1px solid #666;
+      background: #111;
+      color: #fff;
+      border-radius: 6px;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .control-panel button:hover {
+      background: #222;
+      transform: scale(1.05);
+    }
+
     video { display: none; }
+
+    /* Cursor + trail */
     .cursor {
       position: fixed; width: 18px; height: 18px; border-radius: 50%;
       transform: translate(-50%, -50%);
@@ -40,65 +71,39 @@
       0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
       100% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
     }
-    @keyframes bgFlash {
-      0% { background: #000; }
-      25% { background: #111; }
-      50% { background: #222; }
-      75% { background: #111; }
-      100% { background: #000; }
-    }
-    section.chaotic { animation: bgFlash 2s infinite; }
   </style>
 </head>
 <body>
+  <h1 id="timer">Loading…</h1>
+
+  <!-- Control panel -->
+  <div class="control-panel">
+    <h2>Control Panel</h2>
+    <button id="record">Start Recording</button>
+    <button id="stop">Stop & Download</button>
+    <button id="worm">Toggle Worm Mode</button>
+  </div>
+
+  <video id="preview" autoplay muted></video>
   <div class="cursor" id="cursor"></div>
 
-  <!-- Template section -->
-  <section id="template">
-    <h1 class="timer">Loading…</h1>
-    <div class="controls">
-      <button class="record">Start recording</button>
-      <button class="stop">Stop & download</button>
-      <button class="worm">Toggle worm mode</button>
-    </div>
-    <video class="preview" autoplay muted></video>
-  </section>
-
   <script>
-    // Target date
+    // Countdown target
     const target = new Date("January 1, 2026 00:00:00 PST").getTime();
-
-    function updateCountdown(el) {
+    function updateCountdown() {
       const now = Date.now();
       const distance = target - now;
       const days = Math.floor(distance / (1000*60*60*24));
       const hours = Math.floor((distance % (1000*60*60*24))/(1000*60*60));
       const minutes = Math.floor((distance % (1000*60*60))/(1000*60));
       const seconds = Math.floor((distance % (1000*60))/1000);
-      el.textContent = distance >= 0 ? `${days}d ${hours}h ${minutes}m ${seconds}s` : "🎉 Happy New Year!";
+      document.getElementById("timer").textContent =
+        distance >= 0 ? `${days}d ${hours}h ${minutes}m ${seconds}s` : "🎉 Happy New Year!";
     }
-
-    // Duplicate chaos sections
-    function duplicateSection() {
-      const template = document.getElementById("template");
-      const clone = template.cloneNode(true);
-      clone.id = "";
-      clone.classList.add("chaotic");
-      // Random transform
-      const rot = (Math.random()*20-10);
-      const scale = 0.9 + Math.random()*0.3;
-      clone.style.transform = `rotate(${rot}deg) scale(${scale})`;
-      document.body.appendChild(clone);
-      const timer = clone.querySelector(".timer");
-      setInterval(()=>updateCountdown(timer),1000);
-    }
-
-    // Create multiple chaotic sections
-    for(let i=0;i<6;i++){ duplicateSection(); }
-    setInterval(()=>duplicateSection(),5000); // keep adding chaos
+    setInterval(updateCountdown,1000); updateCountdown();
 
     // Cursor chaos
-    const cursor = document.getElementById("cursor");
+    const cursor=document.getElementById("cursor");
     let mouseX=window.innerWidth/2, mouseY=window.innerHeight/2, cx=mouseX, cy=mouseY;
     let currentColor='hsl(0,100%,65%)';
     function animateCursor(){
@@ -125,3 +130,4 @@
   </script>
 </body>
 </html>
+
